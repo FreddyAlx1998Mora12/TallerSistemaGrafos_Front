@@ -1,0 +1,177 @@
+{% extends 'index.html' %} {% block content %}
+
+<div class="row align-items-center">
+  <div class="col-lg-6">
+    <h4>Mapa</h4>
+    <!-- Contenedor del mapa -->
+    <div id="map" style="height: 500px"></div>
+  </div>
+  <div class="col-sm-3">
+    <h4>Formulario de Coordenadas</h4>
+    <!-- Formulario -->
+    <form
+      id="coordinates-form"
+      action="/ruta/registro"
+      method="POST"
+      onsubmit="return validateForm()"
+    >
+      <label for="latitude">Descripcion:</label>
+      <div
+        class="invalid-feedback"
+        id="descripcionFeedback"
+        style="display: none"
+      >
+        La descripción no puede estar vacía.
+      </div>
+      <input
+        type="text"
+        id="descripcion"
+        name="descripcion"
+        required
+      /><br /><br />
+      <label for="latitude">Latitud:</label>
+      <input
+        type="text"
+        id="latitude"
+        name="latitude"
+        readonly
+        required
+      /><br /><br />
+
+      <label for="longitude">Longitud:</label>
+      <input
+        type="text"
+        id="longitude"
+        name="longitude"
+        readonly
+        required
+      /><br /><br />
+      <div class="invalid-feedback" id="longFeedback" style="display: none">
+        Seleccione un punto en el mapa.
+      </div>
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle"></i> Enviar
+      </button>
+      <button type="reset" class="btn btn-secondary">
+        <i class="bi bi-x-circle"></i> Limpiar Registro
+      </button>
+    </form>
+  </div>
+</div>
+<br />
+<div>
+  <div class="card p-4">
+    <div class="row">
+      <h1 class="card-title text-center">Lista de Rutas</h1>
+    </div>
+    ver grafo generar grafo
+    <!-- Table with stripped rows -->
+    <div class="table-responsive">
+      <table class="table table-striped datatable text-center">
+        <thead class="thead-dark">
+          <tr>
+            <th>Nro</th>
+            <th>Descripción</th>
+            <th>Latitud</th>
+            <th>Longitud</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if list %} {% for item in list %}
+          <tr id="row-{{ item.idRuta }}">
+            <td>{{ item.idRuta }}</td>
+            <td>{{ item.descripcion }}</td>
+            <td>{{ item.latitud }}</td>
+            <td>{{ item.longitud }}</td>
+            <td>
+              <a
+                href="/ruta/update/{{ item.idRuta }}"
+                class="btn btn-custom btn-warning"
+                >Modificar</a
+              >
+              <form
+                action="/ruta/delete/{{ item.idRuta }}"
+                method="post"
+                style="display: inline"
+              >
+                <input type="hidden" name="_method" value="DELETE" />
+                <!-- Campo oculto para indicar el método -->
+                <button type="submit" class="btn btn-custom btn-danger">
+                  Eliminar
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="6" class="text-center">
+              No hay listado de rutas registrados. Registre una nueva ruta.
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Inicializar el mapa
+  var map = L.map("map").setView([-3.987869800134828, -79.20447349548341], 13); // Coordenadas por defecto
+
+  // Cargar el mapa con OpenStreetMap
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  // Función para manejar el click en el mapa
+  map.on("click", function (e) {
+    var lat = e.latlng.lat;
+    var lng = e.latlng.lng;
+
+    // Colocar un marcador en el mapa
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup("Lat: " + lat + ", Lng: " + lng)
+      .openPopup();
+
+    // Rellenar el formulario con las coordenadas
+    document.getElementById("latitude").value = lat;
+    document.getElementById("longitude").value = lng;
+  });
+
+  document
+    .getElementById("descripcion")
+    .addEventListener("input", function () {
+      const descripcion = this.value;
+      const feedback = document.getElementById("descripcionFeedback");
+
+      if (!descripcion.trim() || descripcion.length <= 5) {
+        feedback.style.display = "block";
+      } else {
+        feedback.style.display = "none";
+      }
+    });
+    
+  function validateForm() {
+
+    document.getElementById("latitude").addEventListener("input", function () {
+      const lat = this.value;
+      const feedback = document.getElementById("longFeedback");
+
+      if (!lat.trim()) {
+        feedback.style.display = "block";
+      } else {
+        feedback.style.display = "none";
+      }
+    });
+  }
+
+  function resetForm() {
+    // Limpiar los campos del formulario
+    document.getElementById("coordinates-form").reset();
+  }
+</script>
+{% endblock %}
