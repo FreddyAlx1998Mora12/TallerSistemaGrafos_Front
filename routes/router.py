@@ -69,3 +69,52 @@ def eliminar_ruta(id):
     
     # return redirect(view_mapa_ruta)
     return redirect(url_for('router.view_mapa_ruta'))
+
+@router.route("/ruta/view/graph")
+def view_graph():
+    return render_template("components/lineas_rutas/grafo.html")
+
+# Ruta para crear un grafo aleatorio
+@router.route("/ruta/crear-grafo-aleatorio", methods=["GET"])
+def crear_grafo_aleatorio():
+    r = requests.get("http://localhost:8080/myapp/ruta/create/graph")
+    datos_grafo = r.json()
+    print(f"Status Code: {r.status_code}")
+    print(f"Response Content: {r.text}")
+
+    # Renderizar la plantilla con los nuevos datos del grafo
+    return render_template("components/lineas_rutas/grafo.html")
+
+# Ruta para realizar DFS
+@router.route("/ruta/realizar-dfs", methods=["GET"])
+def realizar_dfs():
+    r = requests.get("http://localhost:8080/myapp/ruta/load/graph")
+    datos_grafo = r.json()
+    print(f"Status Code: {r.status_code}")
+    print(f"Response Content: {r.text}")
+
+    # Renderizar la plantilla con los nuevos datos del grafo
+    return render_template("components/lineas_rutas/grafo.html", grafo=datos_grafo["dataGraph"])
+
+# Ruta para aplicar el algoritmo de Floyd
+@router.route("/ruta/aplicar-floyd", methods=["GET"])
+def aplicar_floyd():
+    r = requests.get("http://localhost:8080/myapp/ruta/alg/floyd")
+    datos_grafo = r.json()
+    print(f"Status Code: {r.status_code}")
+    print(f"Response Content: {r.text}")
+
+    # Renderizar la plantilla con los nuevos datos del grafo
+    return render_template("components/lineas_rutas/grafo.html", grafo=datos_grafo["dataGraph"])
+
+# Ruta para aplicar el algoritmo de Bellman Ford
+@router.route("/ruta/aplicar-bellman-ford", methods=["GET"])
+def aplicar_bellman_ford():
+    
+    r = requests.get("http://localhost:8080/myapp/ruta/alg/bell")
+    datos_grafo = r.json()
+    print(f"Status Code: {r.status_code}")
+    print(f"Response Content: {r.text}")
+
+    # Renderizar la plantilla con los nuevos datos del grafo
+    return render_template("components/lineas_rutas/grafo.html", grafo=datos_grafo["dataGraph"])

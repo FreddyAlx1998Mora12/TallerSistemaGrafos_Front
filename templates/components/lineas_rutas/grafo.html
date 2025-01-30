@@ -1,18 +1,253 @@
-{% extends 'index.html' %} {% block content %}
-<script src="vis.js"></script>
+{% extends 'index.html' %}
+
+{% block content %}
+<!-- Script para la visualización del grafo -->
+<script src="{{ url_for('static', filename='js/vis.js') }}"></script>
+
+<!-- Estilos personalizados -->
 <style type="text/css">
   #mynetwork {
-    width: 600px;
-    height: 400px;
-    border: 1px solid lightgray;
+    width: 100%;
+    height: 500px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+  }
+
+  .feature-box {
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .feature-box button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+  }
+
+  .feature-box h4 {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .feature-box p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  .feature-box i {
+    font-size: 24px;
+    color: #007bff;
+    margin-bottom: 10px;
+  }
+
+  .section {
+    padding: 40px 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -15px;
+  }
+
+  .col-xl-3, .col-xl-8, .col-md-6, .col-md-12 {
+    padding: 15px;
+  }
+
+  .col-xl-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  .col-xl-8 {
+    flex: 0 0 66.6667%;
+    max-width: 66.6667%;
+  }
+
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .col-xl-3, .col-xl-8, .col-md-6 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
   }
 </style>
 
-<p>Muestra de grafo.</p>
+<!-- Sección principal -->
+<section id="features-cards" class="features-cards section">
+  <div class="container">
+    <div class="row gy-4">
+      <!-- Columna de botones -->
+      <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="100">
+        <div class="feature-box orange">
+          <i class="bi bi-diagram-3"></i>
+          <h4>Acciones del Grafo</h4>
+          <form action="{{ url_for('router.crear_grafo_aleatorio') }}" method="GET">
+            <button type="submit" class="btn btn-outline-warning">Crear Grafo Aleatorio</button>
+          </form>
+          <form action="{{ url_for('router.realizar_dfs') }}" method="GET">
+            <button type="submit" class="btn btn-outline-warning">Recorrido en Profundidad (DFS)</button>
+          </form>
+          <form action="{{ url_for('router.aplicar_floyd') }}" method="GET">
+            <button type="submit" class="btn btn-outline-warning">Algoritmo de Floyd</button>
+          </form>
+          <form action="{{ url_for('router.aplicar_bellman_ford') }}" method="GET">
+            <button type="submit" class="btn btn-outline-warning">Algoritmo de Bellman Ford</button>
+          </form>
+        </div>
+      </div><!-- End Feature Box -->
 
-<div id="mynetwork"></div>
+      <!-- Columna de información adicional -->
+      <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="300">
+        <div class="feature-box green">
+          <i class="bi bi-info-circle"></i>
+          <h4>Información del Grafo</h4>
+          <p>
+            {{ grafo }}
+          </p>
+        </div>
+      </div><!-- End Feature Box -->
 
-<script type="text/javascript" src="graph.js">
-  // create an array with nodes
+      <!-- Visualización del grafo -->
+      <div class="col-xl-8 col-md-12">
+        <div id="mynetwork"></div>
+      </div>
+
+      
+    </div>
+  </div>
+</section><!-- /Features Cards Section -->
+
+<!-- Script para la lógica del grafo -->
+<script src="{{ url_for('static', filename='js/graph.js') }}"></script>
+
+
+<script>
+  // URL base del backend
+  const backendUrl = "http://localhost:8080/myapp/ruta";
+
+  // Método para crear un grafo aleatorio
+  async function crearGrafoAleatorio() {
+    try {
+      const response = await fetch(`${backendUrl}/create/graph`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("Grafo aleatorio creado: " + JSON.stringify(data));
+        actualizarGrafo(data); // Actualiza la visualización del grafo
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error al crear el grafo aleatorio:", error);
+      alert("Error al conectar con el backend.");
+    }
+  }
+
+  // Método para realizar DFS
+  async function realizarDFS() {
+    try {
+      const response = await fetch(`${backendUrl}/load/graph`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("Recorrido DFS: " + JSON.stringify(data));
+        actualizarGrafo(data); // Actualiza la visualización del grafo
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error al realizar DFS:", error);
+      alert("Error al conectar con el backend.");
+    }
+  }
+
+  // Método para aplicar el algoritmo de Floyd
+  async function aplicarFloyd() {
+    try {
+      const response = await fetch(`${backendUrl}/alg/floyd`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("Algoritmo de Floyd aplicado: " + JSON.stringify(data));
+        actualizarGrafo(data); // Actualiza la visualización del grafo
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error al aplicar Floyd:", error);
+      alert("Error al conectar con el backend.");
+    }
+  }
+
+  // Método para aplicar el algoritmo de Bellman Ford
+  async function aplicarBellmanFord() {
+    try {
+      const response = await fetch(`${backendUrl}/alg/bell`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("Algoritmo de Bellman Ford aplicado: " + JSON.stringify(data));
+        actualizarGrafo(data); // Actualiza la visualización del grafo
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Error al aplicar Bellman Ford:", error);
+      alert("Error al conectar con el backend.");
+    }
+  }
+
+  // Método para actualizar la visualización del grafo
+  function actualizarGrafo(data) {
+    // Aquí puedes usar la biblioteca vis.js para actualizar el grafo
+    console.log("Datos del grafo recibidos:", data);
+    // Lógica para actualizar el grafo en el contenedor #mynetwork
+  }
 </script>
 {% endblock %}

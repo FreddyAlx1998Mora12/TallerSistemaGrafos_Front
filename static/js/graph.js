@@ -1,6 +1,5 @@
 var nodes = new vis.DataSet([
 
-
 ]);
 var edges = new vis.DataSet([
 
